@@ -19,14 +19,14 @@ appveyor = { repository = "alexcrichton/tokio-core" }
 [dependencies]
 bytes = "0.4"
 log = "0.4"
-mio = "0.6.12"
+mio = { git = "https://github.com/redox-os/mio" }
 scoped-tls = "0.1.0"
-iovec = "0.1"
-tokio-io = "0.1"
-tokio = "0.1.5"
-tokio-executor = "0.1.2"
-tokio-reactor = "0.1.1"
-tokio-timer = "0.2.1"
+iovec = "0.1.2"
+tokio-io = { git = "https://github.com/redox-os/tokio" }
+tokio = { git = "https://github.com/redox-os/tokio" }
+tokio-executor = { git = "https://github.com/redox-os/tokio" }
+tokio-reactor = { git = "https://github.com/redox-os/tokio" }
+tokio-timer = { git = "https://github.com/redox-os/tokio" }
 futures = "0.1.21"
 
 [dev-dependencies]

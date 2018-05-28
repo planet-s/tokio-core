@@ -355,7 +355,7 @@ impl<E: Read> Read for PollEvented<E> {
 
         let r = self.get_mut().read(buf);
 
-        if is_wouldblock(&r) {
+        if is_wouldblock(&r) || cfg!(target_os = "redox") {
             self.need_read();
         }
 
@@ -371,7 +371,7 @@ impl<E: Write> Write for PollEvented<E> {
 
         let r = self.get_mut().write(buf);
 
-        if is_wouldblock(&r) {
+        if is_wouldblock(&r) || cfg!(target_os = "redox") {
             self.need_write();
         }
 
@@ -385,7 +385,7 @@ impl<E: Write> Write for PollEvented<E> {
 
         let r = self.get_mut().flush();
 
-        if is_wouldblock(&r) {
+        if is_wouldblock(&r) || cfg!(target_os = "redox") {
             self.need_write();
         }
 
@@ -423,7 +423,7 @@ impl<'a, E> Read for &'a PollEvented<E>
 
         let r = self.get_ref().read(buf);
 
-        if is_wouldblock(&r) {
+        if is_wouldblock(&r) || cfg!(target_os = "redox") {
             self.need_read();
         }
 
@@ -441,7 +441,7 @@ impl<'a, E> Write for &'a PollEvented<E>
 
         let r = self.get_ref().write(buf);
 
-        if is_wouldblock(&r) {
+        if is_wouldblock(&r) || cfg!(target_os = "redox") {
             self.need_write();
         }
 
@@ -455,7 +455,7 @@ impl<'a, E> Write for &'a PollEvented<E>
 
         let r = self.get_ref().flush();
 
-        if is_wouldblock(&r) {
+        if is_wouldblock(&r) || cfg!(target_os = "redox") {
             self.need_write();
         }
 

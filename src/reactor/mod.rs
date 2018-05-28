@@ -695,7 +695,7 @@ mod platform {
     }
 }
 
-#[cfg(any(windows, target_os = "fuchsia"))]
+#[cfg(any(windows, target_os = "fuchsia", target_os = "redox"))]
 mod platform {
     use mio::Ready;
 
