@@ -80,14 +80,28 @@ impl TcpListener {
     /// The stream is *in blocking mode*, and is not associated with the Tokio
     /// event loop.
     pub fn accept_std(&mut self) -> io::Result<(net::TcpStream, SocketAddr)> {
-        if let Async::NotReady = self.io.poll_read_ready(mio::Ready::readable())? {
-            return Err(io::Error::new(io::ErrorKind::WouldBlock, "not ready"))
+        #[cfg(not(target_os = "redox"))] {
+            if let Async::NotReady = self.io.poll_read_ready(mio::Ready::readable())? {
+                return Err(io::Error::new(io::ErrorKind::WouldBlock, "not ready"))
+            }
+        }
+        #[cfg(target_os = "redox")] {
+            if let Async::NotReady = self.io.poll_write_ready()? {
+                return Err(io::Error::new(io::ErrorKind::WouldBlock, "not ready"))
+            }
         }
 
-        match self.io.get_ref().accept_std() {
+        let stream = self.io.get_ref().accept_std();
+
+        #[cfg(target_os = "redox")]
+        self.io.clear_write_ready()?;
+
+        match stream {
             Err(e) => {
-                if e.kind() == io::ErrorKind::WouldBlock {
-                    self.io.clear_read_ready(mio::Ready::readable())?;
+                #[cfg(not(target_os = "redox"))] {
+                    if e.kind() == io::ErrorKind::WouldBlock {
+                        self.io.clear_read_ready(mio::Ready::readable())?;
+                    }
                 }
                 Err(e)
             },
