@@ -91,17 +91,13 @@ impl TcpListener {
             }
         }
 
-        let stream = self.io.get_ref().accept_std();
-
-        #[cfg(target_os = "redox")]
-        self.io.clear_write_ready()?;
-
-        match stream {
+        match self.io.get_ref().accept_std() {
             Err(e) => {
-                #[cfg(not(target_os = "redox"))] {
-                    if e.kind() == io::ErrorKind::WouldBlock {
-                        self.io.clear_read_ready(mio::Ready::readable())?;
-                    }
+                if e.kind() == io::ErrorKind::WouldBlock {
+                    #[cfg(not(target_os = "redox"))]
+                    self.io.clear_read_ready(mio::Ready::readable())?;
+                    #[cfg(target_os = "redox")]
+                    self.io.clear_write_ready()?;
                 }
                 Err(e)
             },

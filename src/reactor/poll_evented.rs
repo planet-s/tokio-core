@@ -293,12 +293,6 @@ impl<E> PollEvented<E> {
     pub fn need_read(&self) {
         self.inner.read_readiness.store(0, Relaxed);
 
-        #[cfg(target_os = "redox")]
-        // On redox, you can get more than one event per event.
-        // It keeps sending it over and over.
-        // We poll here to simply clear the inner readiness.
-        let _ = self.inner.registration.take_read_ready();
-
         if self.poll_read().is_ready() {
             // Notify the current task
             task::current().notify();
@@ -327,12 +321,6 @@ impl<E> PollEvented<E> {
     /// task.
     pub fn need_write(&self) {
         self.inner.write_readiness.store(0, Relaxed);
-
-        #[cfg(target_os = "redox")]
-        // On redox, you can get more than one event per event.
-        // It keeps sending it over and over.
-        // We poll here to simply clear the inner readiness.
-        let _ = self.inner.registration.take_write_ready();
 
         if self.poll_write().is_ready() {
             // Notify the current task
@@ -367,7 +355,7 @@ impl<E: Read> Read for PollEvented<E> {
 
         let r = self.get_mut().read(buf);
 
-        if is_wouldblock(&r) || cfg!(target_os = "redox") {
+        if is_wouldblock(&r) {
             self.need_read();
         }
 
@@ -383,7 +371,7 @@ impl<E: Write> Write for PollEvented<E> {
 
         let r = self.get_mut().write(buf);
 
-        if is_wouldblock(&r) || cfg!(target_os = "redox") {
+        if is_wouldblock(&r) {
             self.need_write();
         }
 
@@ -397,7 +385,7 @@ impl<E: Write> Write for PollEvented<E> {
 
         let r = self.get_mut().flush();
 
-        if is_wouldblock(&r) || cfg!(target_os = "redox") {
+        if is_wouldblock(&r) {
             self.need_write();
         }
 
@@ -435,7 +423,7 @@ impl<'a, E> Read for &'a PollEvented<E>
 
         let r = self.get_ref().read(buf);
 
-        if is_wouldblock(&r) || cfg!(target_os = "redox") {
+        if is_wouldblock(&r) {
             self.need_read();
         }
 
@@ -453,7 +441,7 @@ impl<'a, E> Write for &'a PollEvented<E>
 
         let r = self.get_ref().write(buf);
 
-        if is_wouldblock(&r) || cfg!(target_os = "redox") {
+        if is_wouldblock(&r) {
             self.need_write();
         }
 
@@ -467,7 +455,7 @@ impl<'a, E> Write for &'a PollEvented<E>
 
         let r = self.get_ref().flush();
 
-        if is_wouldblock(&r) || cfg!(target_os = "redox") {
+        if is_wouldblock(&r) {
             self.need_write();
         }
 
